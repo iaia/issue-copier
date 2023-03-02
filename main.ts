@@ -11,8 +11,14 @@ async function run() {
             repo: 'issue-copier',
             assignee: 'none'
         }).then((res) => {
-            res.data.forEach((v, index, array) => {
-                core.debug(`unassigned issue: title: ${v.title} #${v.number}, ${v.created_at}`);
+            const current = new Date()
+            res.data.forEach((issue, index, array) => {
+                const supportLimitDateTime = new Date(issue.created_at)
+                supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + 5)
+
+                if(supportLimitDateTime <= current) {
+                    core.debug(`unassigned issue: title: ${issue.title} #${issue.number}`);
+                }
             })
         })
     } catch (error) {
