@@ -1,0 +1,18 @@
+name: 'issue-copier'
+description: 'copy issue to another repository'
+inputs:
+  github_owner:
+    description: 'github owner. (ex. iaia)'
+    required: true
+  github_repository:
+    description: 'target github repository. (ex. issue-copier)'
+    required: true
+  github_dest_repository:
+    description: 'destination github repository. (ex. issue-copier)'
+    required: true
+  github_access_token:
+    description: 'github access token'
+    required: true
+runs:
+  using: 'node16'
+  main: 'main.js'
