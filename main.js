@@ -52,6 +52,7 @@ function run() {
                 GITHUB_REPOSITORY = core.getInput('github repository', { required: true });
                 GITHUB_DEST_REPOSITORY = core.getInput('github dest repository', { required: true });
                 githubToken = core.getInput('github access token', { required: true });
+                core.setSecret(githubToken);
                 octokit_1 = github.getOctokit(githubToken);
                 // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
                 octokit_1.rest.issues.listForRepo({
@@ -101,7 +102,7 @@ function checkSupportLimit(labels) {
         return 60;
     }
     else {
-        return 1;
+        return 5;
     }
 }
 function copyIssue(octokit, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
