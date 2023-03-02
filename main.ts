@@ -2,14 +2,17 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {GitHub} from "@actions/github/lib/utils";
 
-const GITHUB_OWNER = 'iaia'
-const GITHUB_REPOSITORY = 'issue-copier'
-const GITHUB_DEST_REPOSITORY = 'issue-copier'
+let GITHUB_OWNER = ''
+let GITHUB_REPOSITORY = ''
+let GITHUB_DEST_REPOSITORY = ''
 const IGNORE_ISSUE_LABEL = 'escalated'
 const EMERGENCY_ISSUE_LABEL = 'emergency'
 
 async function run() {
     try {
+        GITHUB_OWNER = core.getInput('github owner', {required: true})
+        GITHUB_REPOSITORY = core.getInput('github repository', {required: true})
+        GITHUB_DEST_REPOSITORY = core.getInput('github dest repository', {required: true})
         const githubToken = core.getInput('github access token', {required: true})
         const octokit = github.getOctokit(githubToken)
 
