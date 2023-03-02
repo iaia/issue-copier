@@ -14,6 +14,7 @@ async function run() {
         GITHUB_REPOSITORY = core.getInput('github repository', {required: true})
         GITHUB_DEST_REPOSITORY = core.getInput('github dest repository', {required: true})
         const githubToken = core.getInput('github access token', {required: true})
+        core.setSecret(githubToken)
         const octokit = github.getOctokit(githubToken)
 
         // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
@@ -70,7 +71,7 @@ function checkSupportLimit(labels: (string | undefined)[]) {
     if (typeof emergency === "undefined") {
         return 60
     } else {
-        return 1
+        return 5
     }
 }
 
