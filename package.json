@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@actions/core": "^1.10.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
   }
 }
