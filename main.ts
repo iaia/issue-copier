@@ -2,6 +2,12 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {GitHub} from "@actions/github/lib/utils";
 
+const GITHUB_OWNER = 'iaia'
+const GITHUB_REPOSITORY = 'issue-copier'
+const GITHUB_DEST_REPOSITORY = 'issue-copier'
+const IGNORE_ISSUE_LABEL = 'escalated'
+const EMERGENCY_ISSUE_LABEL = 'emergency'
+
 async function run() {
     try {
         const githubToken = core.getInput('github access token', {required: true})
@@ -9,8 +15,8 @@ async function run() {
 
         // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
         octokit.rest.issues.listForRepo({
-            owner: 'iaia',
-            repo: 'issue-copier',
+            owner: GITHUB_OWNER,
+            repo: GITHUB_REPOSITORY,
             assignee: 'none',
         }).then((res) => {
             const current = new Date()
@@ -26,7 +32,7 @@ async function run() {
                     }
                 )
 
-                if (labels.find((label) => label === 'escalated')) {
+                if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
                     return
                 }
                 if (labels.length == 0) {
@@ -56,12 +62,12 @@ async function run() {
 
 function checkSupportLimit(labels: (string | undefined)[]) {
     const emergency = labels.find((label) =>
-        label == 'emergency'
+        label == EMERGENCY_ISSUE_LABEL
     )
     if (typeof emergency === "undefined") {
         return 60
     } else {
-        return 5
+        return 1
     }
 }
 
@@ -87,8 +93,8 @@ ${joinedOldComments}
     `
 
     await octokit.rest.issues.create({
-        owner: 'iaia',
-        repo: 'issue-copier',
+        owner: GITHUB_OWNER,
+        repo: GITHUB_DEST_REPOSITORY,
         title: oldIssueTitle,
         body: issueBody,
     }).then((res) => {
@@ -96,16 +102,16 @@ ${joinedOldComments}
         core.debug(`create issue! ${createdIssueUrl}`)
 
         octokit.rest.issues.createComment({
-            owner: 'iaia',
-            repo: 'issue-copier',
+            owner: GITHUB_OWNER,
+            repo: GITHUB_REPOSITORY,
             issue_number: oldIssueNumber,
             body: `create issue! ${createdIssueUrl}`
         })
         octokit.rest.issues.addLabels({
-            owner: 'iaia',
-            repo: 'issue-copier',
+            owner: GITHUB_OWNER,
+            repo: GITHUB_REPOSITORY,
             issue_number: oldIssueNumber,
-            labels: ['escalated'],
+            labels: [IGNORE_ISSUE_LABEL],
         })
     })
 }
@@ -115,8 +121,8 @@ async function getComments(
     issueNumber: number
 ): Promise<string[]> {
     return octokit.rest.issues.listComments({
-        owner: 'iaia',
-        repo: 'issue-copier',
+        owner: GITHUB_OWNER,
+        repo: GITHUB_REPOSITORY,
         issue_number: issueNumber,
     }).then((res) => {
         return res.data.map((v) => {
