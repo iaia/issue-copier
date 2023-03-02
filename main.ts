@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 
 async function run() {
     try {
-        const githubToken = core.getInput('github access token', { required: true })
+        const githubToken = core.getInput('github access token', {required: true})
         const octokit = github.getOctokit(githubToken)
 
         octokit.rest.issues.listForRepo({
@@ -13,16 +13,40 @@ async function run() {
         }).then((res) => {
             const current = new Date()
             res.data.forEach((issue, index, array) => {
-                const supportLimitDateTime = new Date(issue.created_at)
-                supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + 5)
+                const labels = issue.labels.map(label => {
+                        if (typeof label === 'string') {
+                            return label
+                        } else {
+                            return label.name
+                        }
+                    }
+                )
+                const supportLimitMinutes = checkSupportLimit(labels)
 
-                if(supportLimitDateTime <= current) {
+                const supportLimitDateTime = new Date(issue.created_at)
+                supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes)
+
+                if (supportLimitDateTime <= current) {
                     core.debug(`unassigned issue: title: ${issue.title} #${issue.number}`);
                 }
             })
         })
-    } catch (error) {
+    }
+    catch
+        (error)
+    {
         if (error instanceof Error) core.setFailed(error.message)
+    }
+}
+
+function checkSupportLimit(labels: (string | undefined)[]) {
+    const emergency = labels.find((label) =>
+        label == 'emergency'
+    )
+    if (typeof emergency === "undefined") {
+        return 60
+    } else {
+        return 5
     }
 }
 
