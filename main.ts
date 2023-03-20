@@ -16,14 +16,18 @@ async function run() {
         const githubToken = core.getInput('github access token', {required: true})
         core.setSecret(githubToken)
         const octokit = github.getOctokit(githubToken)
+        const current = new Date()
+        const yesterday = new Date()
+        yesterday.setDate(current.getDate() - 1)
+        const isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
 
         // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
         octokit.rest.issues.listForRepo({
             owner: GITHUB_OWNER,
             repo: GITHUB_REPOSITORY,
             assignee: 'none',
+            since: isoDate,
         }).then((res) => {
-            const current = new Date()
             res.data.forEach((issue, index, array) => {
                 core.debug(`unassigned issue: ${issue.title} #${issue.number}`);
 
