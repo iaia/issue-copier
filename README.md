@@ -24,6 +24,12 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 ```
 
+# build
+
+```
+$ ./node_modules/.bin/tsc src/main.ts
+```
+
 # LICENSE
 
 https://github.com/iaia/issue-copier/blob/main/LICENSE
