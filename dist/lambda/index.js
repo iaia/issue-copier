@@ -1,6 +1,29 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 6140:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const main_1 = __nccwpck_require__(1023);
+exports.handler = (event, context) => __awaiter(void 0, void 0, void 0, function* () {
+    void (0, main_1.run)();
+});
+
+
+/***/ }),
+
 /***/ 1023:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -47,6 +70,7 @@ const IGNORE_ISSUE_LABEL = 'escalated';
 const EMERGENCY_ISSUE_LABEL = 'emergency';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug('start!');
         try {
             const githubSetting = new GithubSetting(core.getInput('github owner', { required: true }), core.getInput('github repository', { required: true }), core.getInput('github dest repository', { required: true }), core.getInput('github access token', { required: true }));
             const octokit = githubSetting.createClient();
@@ -96,10 +120,10 @@ exports.run = run;
 function checkSupportLimit(labels) {
     const emergency = labels.find((label) => label == EMERGENCY_ISSUE_LABEL);
     if (typeof emergency === "undefined") {
-        return 60;
+        return 1;
     }
     else {
-        return 5;
+        return 1;
     }
 }
 function copyIssue(octokit, githubSetting, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
@@ -135,6 +159,12 @@ ${joinedOldComments}
                 repo: githubSetting.repository,
                 issue_number: oldIssueNumber,
                 labels: [IGNORE_ISSUE_LABEL],
+            });
+            octokit.rest.issues.removeLabel({
+                owner: githubSetting.owner,
+                repo: githubSetting.repository,
+                issue_number: oldIssueNumber,
+                name: ESCALATION_ISSUE_LABEL,
             });
         });
     });
@@ -9938,18 +9968,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-var exports = __webpack_exports__;
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const main_1 = __nccwpck_require__(1023);
-void (0, main_1.run)();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(6140);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;

@@ -47,6 +47,7 @@ const IGNORE_ISSUE_LABEL = 'escalated';
 const EMERGENCY_ISSUE_LABEL = 'emergency';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug('start!');
         try {
             const githubSetting = new GithubSetting(core.getInput('github owner', { required: true }), core.getInput('github repository', { required: true }), core.getInput('github dest repository', { required: true }), core.getInput('github access token', { required: true }));
             const octokit = githubSetting.createClient();
@@ -96,10 +97,10 @@ exports.run = run;
 function checkSupportLimit(labels) {
     const emergency = labels.find((label) => label == EMERGENCY_ISSUE_LABEL);
     if (typeof emergency === "undefined") {
-        return 60;
+        return 1;
     }
     else {
-        return 5;
+        return 1;
     }
 }
 function copyIssue(octokit, githubSetting, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
@@ -135,6 +136,12 @@ ${joinedOldComments}
                 repo: githubSetting.repository,
                 issue_number: oldIssueNumber,
                 labels: [IGNORE_ISSUE_LABEL],
+            });
+            octokit.rest.issues.removeLabel({
+                owner: githubSetting.owner,
+                repo: githubSetting.repository,
+                issue_number: oldIssueNumber,
+                name: ESCALATION_ISSUE_LABEL,
             });
         });
     });
