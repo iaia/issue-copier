@@ -7,6 +7,8 @@ const IGNORE_ISSUE_LABEL = 'escalated'
 const EMERGENCY_ISSUE_LABEL = 'emergency'
 
 export async function run() {
+  core.debug('start!');
+
   try {
     const githubSetting = new GithubSetting(
       core.getInput('github owner', {required: true}),
@@ -74,9 +76,9 @@ function checkSupportLimit(labels: (string | undefined)[]) {
     label == EMERGENCY_ISSUE_LABEL
   )
   if (typeof emergency === "undefined") {
-    return 60
+    return 1
   } else {
-    return 5
+    return 1
   }
 }
 
@@ -122,6 +124,12 @@ ${joinedOldComments}
       repo: githubSetting.repository,
       issue_number: oldIssueNumber,
       labels: [IGNORE_ISSUE_LABEL],
+    })
+    octokit.rest.issues.removeLabel({
+      owner: githubSetting.owner,
+      repo: githubSetting.repository,
+      issue_number: oldIssueNumber,
+      name: ESCALATION_ISSUE_LABEL,
     })
   })
 }
