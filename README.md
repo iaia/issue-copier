@@ -28,6 +28,8 @@ jobs:
 
 ```
 $ ./node_modules/.bin/tsc src/main.ts
+$ ncc build src/entry_point_for_github_actions.js --license LICENSE
+$ ncc build src/entry_point_for_lambda.js --license LICENSE
 ```
 
 # LICENSE

@@ -9597,34 +9597,11 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 5974:
+/***/ 2860:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9634,67 +9611,96 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(6024));
-const github = __importStar(__nccwpck_require__(5016));
-let GITHUB_OWNER = '';
-let GITHUB_REPOSITORY = '';
-let GITHUB_DEST_REPOSITORY = '';
-const IGNORE_ISSUE_LABEL = 'escalated';
-const EMERGENCY_ISSUE_LABEL = 'emergency';
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+exports.run = void 0;
+var core = __nccwpck_require__(6024);
+var github = __nccwpck_require__(5016);
+var ESCALATION_ISSUE_LABEL = 'escalation';
+var IGNORE_ISSUE_LABEL = 'escalated';
+var EMERGENCY_ISSUE_LABEL = 'emergency';
 function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            GITHUB_OWNER = core.getInput('github owner', { required: true });
-            GITHUB_REPOSITORY = core.getInput('github repository', { required: true });
-            GITHUB_DEST_REPOSITORY = core.getInput('github dest repository', { required: true });
-            const githubToken = core.getInput('github access token', { required: true });
-            core.setSecret(githubToken);
-            const octokit = github.getOctokit(githubToken);
-            const current = new Date();
-            const yesterday = new Date();
-            yesterday.setDate(current.getDate() - 1);
-            const isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
-            // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
-            octokit.rest.issues.listForRepo({
-                owner: GITHUB_OWNER,
-                repo: GITHUB_REPOSITORY,
-                assignee: 'none',
-                since: isoDate,
-            }).then((res) => {
-                res.data.forEach((issue, index, array) => {
-                    core.debug(`unassigned issue: ${issue.title} #${issue.number}`);
-                    const labels = issue.labels.map(label => {
-                        if (typeof label === 'string') {
-                            return label;
+    return __awaiter(this, void 0, void 0, function () {
+        var githubSetting_1, octokit_1, current_1, yesterday, isoDate;
+        return __generator(this, function (_a) {
+            try {
+                githubSetting_1 = new GithubSetting(core.getInput('github owner', { required: true }), core.getInput('github repository', { required: true }), core.getInput('github dest repository', { required: true }), core.getInput('github access token', { required: true }));
+                octokit_1 = githubSetting_1.createClient();
+                current_1 = new Date();
+                yesterday = new Date();
+                yesterday.setDate(current_1.getDate() - 1);
+                isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
+                // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+                octokit_1.rest.issues.listForRepo({
+                    owner: githubSetting_1.owner,
+                    repo: githubSetting_1.repository,
+                    since: isoDate,
+                    labels: ESCALATION_ISSUE_LABEL
+                }).then(function (res) {
+                    res.data.forEach(function (issue, index, array) {
+                        core.debug("escalation target issue: ".concat(issue.title, " #").concat(issue.number));
+                        var labels = issue.labels.map(function (label) {
+                            if (typeof label === 'string') {
+                                return label;
+                            }
+                            else {
+                                return label.name;
+                            }
+                        });
+                        if (labels.length == 0) {
+                            return;
                         }
-                        else {
-                            return label.name;
+                        if (labels.find(function (label) { return label === IGNORE_ISSUE_LABEL; })) {
+                            return;
+                        }
+                        var supportLimitMinutes = checkSupportLimit(labels);
+                        var supportLimitDateTime = new Date(issue.created_at);
+                        supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
+                        if (supportLimitDateTime <= current_1) {
+                            copyIssue(octokit_1, githubSetting_1, issue.title, issue.body || '', issue.html_url, issue.number);
                         }
                     });
-                    if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
-                        return;
-                    }
-                    if (labels.length == 0) {
-                        return;
-                    }
-                    const supportLimitMinutes = checkSupportLimit(labels);
-                    const supportLimitDateTime = new Date(issue.created_at);
-                    supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
-                    if (supportLimitDateTime <= current) {
-                        copyIssue(octokit, issue.title, issue.body || '', issue.html_url, issue.number);
-                    }
                 });
-            });
-        }
-        catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
-        }
+            }
+            catch (error) {
+                if (error instanceof Error)
+                    core.setFailed(error.message);
+            }
+            return [2 /*return*/];
+        });
     });
 }
+exports.run = run;
 function checkSupportLimit(labels) {
-    const emergency = labels.find((label) => label == EMERGENCY_ISSUE_LABEL);
+    var emergency = labels.find(function (label) {
+        return label == EMERGENCY_ISSUE_LABEL;
+    });
     if (typeof emergency === "undefined") {
         return 60;
     }
@@ -9702,59 +9708,72 @@ function checkSupportLimit(labels) {
         return 5;
     }
 }
-function copyIssue(octokit, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const oldIssueComments = yield getComments(octokit, oldIssueNumber);
-        const joinedOldComments = oldIssueComments.join("\n");
-        const issueBody = `
-ref: ${oldIssueUrl}
-
-## body
-
-${oldIssueBody}
-
-## comments
-${joinedOldComments}
-    `;
-        yield octokit.rest.issues.create({
-            owner: GITHUB_OWNER,
-            repo: GITHUB_DEST_REPOSITORY,
-            title: oldIssueTitle,
-            body: issueBody,
-        }).then((res) => {
-            let createdIssueUrl = res.data.html_url;
-            core.debug(`create issue! ${createdIssueUrl}`);
-            octokit.rest.issues.createComment({
-                owner: GITHUB_OWNER,
-                repo: GITHUB_REPOSITORY,
-                issue_number: oldIssueNumber,
-                body: `create issue! ${createdIssueUrl}`
-            });
-            octokit.rest.issues.addLabels({
-                owner: GITHUB_OWNER,
-                repo: GITHUB_REPOSITORY,
-                issue_number: oldIssueNumber,
-                labels: [IGNORE_ISSUE_LABEL],
-            });
+function copyIssue(octokit, githubSetting, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
+    return __awaiter(this, void 0, void 0, function () {
+        var oldIssueComments, joinedOldComments, issueBody;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getComments(octokit, githubSetting, oldIssueNumber)];
+                case 1:
+                    oldIssueComments = _a.sent();
+                    joinedOldComments = oldIssueComments.join("\n");
+                    issueBody = "\nref: ".concat(oldIssueUrl, "\n\n## body\n\n").concat(oldIssueBody, "\n\n## comments\n").concat(joinedOldComments, "\n    ");
+                    return [4 /*yield*/, octokit.rest.issues.create({
+                            owner: githubSetting.owner,
+                            repo: githubSetting.repository,
+                            title: oldIssueTitle,
+                            body: issueBody
+                        }).then(function (res) {
+                            var createdIssueUrl = res.data.html_url;
+                            core.debug("create issue! ".concat(createdIssueUrl));
+                            octokit.rest.issues.createComment({
+                                owner: githubSetting.owner,
+                                repo: githubSetting.repository,
+                                issue_number: oldIssueNumber,
+                                body: "create issue! ".concat(createdIssueUrl)
+                            });
+                            octokit.rest.issues.addLabels({
+                                owner: githubSetting.owner,
+                                repo: githubSetting.repository,
+                                issue_number: oldIssueNumber,
+                                labels: [IGNORE_ISSUE_LABEL]
+                            });
+                        })];
+                case 2:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
         });
     });
 }
-function getComments(octokit, issueNumber) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return octokit.rest.issues.listComments({
-            owner: GITHUB_OWNER,
-            repo: GITHUB_REPOSITORY,
-            issue_number: issueNumber,
-        }).then((res) => {
-            return res.data.map((v) => {
-                return v.body || '';
-            });
+function getComments(octokit, githubSetting, issueNumber) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/, octokit.rest.issues.listComments({
+                    owner: githubSetting.owner,
+                    repo: githubSetting.repository,
+                    issue_number: issueNumber
+                }).then(function (res) {
+                    return res.data.map(function (v) {
+                        return v.body || '';
+                    });
+                })];
         });
     });
 }
-exports.handler = (event, context) => {
-    run();
-};
+var GithubSetting = /** @class */ (function () {
+    function GithubSetting(owner, repository, destRepository, token) {
+        this.owner = owner;
+        this.repository = repository;
+        this.destRepository = destRepository;
+        this.token = token;
+        core.setSecret(token);
+    }
+    GithubSetting.prototype.createClient = function () {
+        return github.getOctokit(this.token);
+    };
+    return GithubSetting;
+}());
 
 
 /***/ }),
@@ -9933,12 +9952,18 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(5974);
-/******/ 	module.exports = __webpack_exports__;
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+var exports = __webpack_exports__;
+
+exports.__esModule = true;
+var main_1 = __nccwpck_require__(2860);
+void (0, main_1.run)();
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
