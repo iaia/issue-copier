@@ -76,9 +76,9 @@ function checkSupportLimit(labels: (string | undefined)[]) {
     label == EMERGENCY_ISSUE_LABEL
   )
   if (typeof emergency === "undefined") {
-    return 1
+    return 60
   } else {
-    return 1
+    return 5
   }
 }
 
