@@ -27,9 +27,9 @@ jobs:
 # build
 
 ```
-$ ./node_modules/.bin/tsc src/main.ts
-$ ncc build src/entry_point_for_github_actions.js --license LICENSE
-$ ncc build src/entry_point_for_lambda.js --license LICENSE
+$ ./node_modules/.bin/tsc
+$ ncc build build/entry_point_for_github_actions.js --license LICENSE -o dist/github
+$ ncc build build/entry_point_for_lambda.js --license LICENSE -o dist/lambda 
 ```
 
 # LICENSE
