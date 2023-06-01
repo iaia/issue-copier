@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.run = void 0;
 var core = require("@actions/core");
 var github = require("@actions/github");
 var GITHUB_OWNER = '';
@@ -45,7 +46,7 @@ var IGNORE_ISSUE_LABEL = 'escalated';
 var EMERGENCY_ISSUE_LABEL = 'emergency';
 function run() {
     return __awaiter(this, void 0, void 0, function () {
-        var githubToken, octokit_1;
+        var githubToken, octokit_1, current_1, yesterday, isoDate;
         return __generator(this, function (_a) {
             try {
                 GITHUB_OWNER = core.getInput('github owner', { required: true });
@@ -54,13 +55,17 @@ function run() {
                 githubToken = core.getInput('github access token', { required: true });
                 core.setSecret(githubToken);
                 octokit_1 = github.getOctokit(githubToken);
+                current_1 = new Date();
+                yesterday = new Date();
+                yesterday.setDate(current_1.getDate() - 1);
+                isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
                 // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
                 octokit_1.rest.issues.listForRepo({
                     owner: GITHUB_OWNER,
                     repo: GITHUB_REPOSITORY,
-                    assignee: 'none'
+                    assignee: 'none',
+                    since: isoDate
                 }).then(function (res) {
-                    var current = new Date();
                     res.data.forEach(function (issue, index, array) {
                         core.debug("unassigned issue: ".concat(issue.title, " #").concat(issue.number));
                         var labels = issue.labels.map(function (label) {
@@ -80,7 +85,7 @@ function run() {
                         var supportLimitMinutes = checkSupportLimit(labels);
                         var supportLimitDateTime = new Date(issue.created_at);
                         supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
-                        if (supportLimitDateTime <= current) {
+                        if (supportLimitDateTime <= current_1) {
                             copyIssue(octokit_1, issue.title, issue.body || '', issue.html_url, issue.number);
                         }
                     });
@@ -94,6 +99,7 @@ function run() {
         });
     });
 }
+exports.run = run;
 function checkSupportLimit(labels) {
     var emergency = labels.find(function (label) {
         return label == EMERGENCY_ISSUE_LABEL;
@@ -158,4 +164,3 @@ function getComments(octokit, issueNumber) {
         });
     });
 }
-run();
