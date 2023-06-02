@@ -115,7 +115,7 @@ ${joinedOldComments}
 
     octokit.rest.issues.createComment({
       owner: githubSetting.owner,
-      repo: githubSetting.destRepository,
+      repo: githubSetting.repository,
       issue_number: oldIssueNumber,
       body: `create issue! ${createdIssueUrl}`
     })
