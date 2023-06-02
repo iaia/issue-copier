@@ -7,7 +7,7 @@ copy issue to another repository
 
 # Use
 
-```
+```yaml
 jobs:
   issue_copy:
     name: Copy issue to dest repository
@@ -16,7 +16,7 @@ jobs:
       issues: write
     steps:
       - name: Transfer issue
-        uses: iaia/issue-copier@v1.2
+        uses: iaia/issue-copier@v1.X
         with:
           GITHUB_OWNER: 'iaia'
           GITHUB_REPOSITORY: 'issue-copier'

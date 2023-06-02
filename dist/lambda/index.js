@@ -19,7 +19,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const main_1 = __nccwpck_require__(1023);
 const types_1 = __nccwpck_require__(2303);
 exports.handler = (event, context) => __awaiter(void 0, void 0, void 0, function* () {
-    void (0, main_1.run)(types_1.AwsLambda);
+    yield (0, main_1.run)(types_1.AwsLambda);
+    return context.logStreamName;
 });
 
 
@@ -72,56 +73,59 @@ const IGNORE_ISSUE_LABEL = 'escalated';
 const EMERGENCY_ISSUE_LABEL = 'emergency';
 function run(runner) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`start! ${runner.toString()}`);
+        core.debug(`start! on ${runner.description}`);
+        const githubSetting = new GithubSetting(runner, core.getInput('github owner', { required: true }), core.getInput('github repository', { required: true }), core.getInput('github dest repository', { required: true }), core.getInput('github access token', { required: true }));
+        const octokit = githubSetting.createClient();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
+        core.debug(`find ${githubSetting.owner}/${githubSetting.repository}, since: ${isoDate}, labels: ${ESCALATION_ISSUE_LABEL}`);
         try {
-            const githubSetting = new GithubSetting(runner, core.getInput('github owner', { required: true }), core.getInput('github repository', { required: true }), core.getInput('github dest repository', { required: true }), core.getInput('github access token', { required: true }));
-            const octokit = githubSetting.createClient();
-            const current = new Date();
-            const yesterday = new Date();
-            yesterday.setDate(current.getDate() - 1);
-            const isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
-            core.debug(`find ${githubSetting.owner}/${githubSetting.repository}, since: ${isoDate}, labels: ${ESCALATION_ISSUE_LABEL}`);
             // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
-            octokit.rest.issues.listForRepo({
+            const res = yield octokit.rest.issues.listForRepo({
                 owner: githubSetting.owner,
                 repo: githubSetting.repository,
                 since: isoDate,
                 labels: ESCALATION_ISSUE_LABEL,
-            }).then((res) => {
-                core.debug(`found issues ${res.data.length}`);
-                res.data.forEach((issue, index, array) => {
-                    core.debug(`escalation target issue: ${issue.title} #${issue.number}`);
-                    const labels = issue.labels.map(label => {
-                        if (typeof label === 'string') {
-                            return label;
-                        }
-                        else {
-                            return label.name;
-                        }
-                    });
-                    if (labels.length == 0) {
-                        return;
-                    }
-                    if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
-                        return;
-                    }
-                    const supportLimitMinutes = checkSupportLimit(labels);
-                    const supportLimitDateTime = new Date(issue.created_at);
-                    supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
-                    if (supportLimitDateTime <= current) {
-                        copyIssue(octokit, githubSetting, issue.title, issue.body || '', issue.html_url, issue.number);
-                    }
-                });
             });
+            findIssueToEscalate(res, octokit, githubSetting);
         }
         catch (error) {
             core.debug('error occurred');
             if (error instanceof Error)
                 core.setFailed(error.message);
         }
+        core.debug(`finish!`);
     });
 }
 exports.run = run;
+function findIssueToEscalate(res, octokit, githubSetting) {
+    core.debug(`found issues ${res.data.length}`);
+    const current = new Date();
+    res.data.forEach((issue, index, array) => {
+        core.debug(`escalation target issue: ${issue.title} #${issue.number}`);
+        const labels = issue.labels.map(label => {
+            if (typeof label === 'string') {
+                return label;
+            }
+            else {
+                return label.name;
+            }
+        });
+        if (labels.length == 0) {
+            return;
+        }
+        if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
+            return;
+        }
+        const supportLimitMinutes = checkSupportLimit(labels);
+        const supportLimitDateTime = new Date(issue.created_at);
+        supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
+        if (supportLimitDateTime <= current) {
+            copyIssue(octokit, githubSetting, issue.title, issue.body || '', issue.html_url, issue.number);
+        }
+    });
+}
 function checkSupportLimit(labels) {
     const emergency = labels.find((label) => label == EMERGENCY_ISSUE_LABEL);
     if (typeof emergency === "undefined") {

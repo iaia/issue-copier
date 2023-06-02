@@ -12,5 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const main_1 = require("./main");
 const types_1 = require("./types");
 exports.handler = (event, context) => __awaiter(void 0, void 0, void 0, function* () {
-    void (0, main_1.run)(types_1.AwsLambda);
+    yield (0, main_1.run)(types_1.AwsLambda);
+    return context.logStreamName;
 });
