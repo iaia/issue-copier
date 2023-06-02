@@ -1,16 +1,20 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {GitHub} from "@actions/github/lib/utils";
+import {GithubActions, Runner} from "./types";
 
 const ESCALATION_ISSUE_LABEL = 'escalation'
 const IGNORE_ISSUE_LABEL = 'escalated'
 const EMERGENCY_ISSUE_LABEL = 'emergency'
 
-export async function run() {
-  core.debug('start!');
+export async function run(
+  runner: Runner,
+) {
+  core.debug(`start! ${runner.toString()}`);
 
   try {
     const githubSetting = new GithubSetting(
+      runner,
       core.getInput('github owner', {required: true}),
       core.getInput('github repository', {required: true}),
       core.getInput('github dest repository', {required: true}),
@@ -23,6 +27,8 @@ export async function run() {
     yesterday.setDate(current.getDate() - 1)
     const isoDate = yesterday.toISOString().replace(/\.\d{3}Z$/, "Z");
 
+    core.debug(`find ${githubSetting.owner}/${githubSetting.repository}, since: ${isoDate}, labels: ${ESCALATION_ISSUE_LABEL}`)
+
     // https://docs.github.com/ja/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
     octokit.rest.issues.listForRepo({
       owner: githubSetting.owner,
@@ -30,6 +36,8 @@ export async function run() {
       since: isoDate,
       labels: ESCALATION_ISSUE_LABEL,
     }).then((res) => {
+      core.debug(`found issues ${res.data.length}`);
+
       res.data.forEach((issue, index, array) => {
         core.debug(`escalation target issue: ${issue.title} #${issue.number}`);
 
@@ -67,6 +75,7 @@ export async function run() {
       })
     })
   } catch (error) {
+    core.debug('error occurred')
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
@@ -152,12 +161,15 @@ async function getComments(
 
 class GithubSetting {
   constructor(
+    runner: Runner,
     public owner: string,
     public repository: string,
     public destRepository: string,
     private token: string,
   ) {
-    core.setSecret(token)
+    if (runner == GithubActions) {
+      core.setSecret(token)
+    }
   }
 
   createClient() {

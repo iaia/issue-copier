@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const main_1 = require("./main");
+const types_1 = require("./types");
 exports.handler = (event, context) => __awaiter(void 0, void 0, void 0, function* () {
-    void (0, main_1.run)();
+    void (0, main_1.run)(types_1.AwsLambda);
 });
