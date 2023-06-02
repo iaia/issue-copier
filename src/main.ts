@@ -39,7 +39,7 @@ export async function run(
       labels: ESCALATION_ISSUE_LABEL,
     })
 
-    findIssueToEscalate(res, octokit, githubSetting)
+    await findIssueToEscalate(res, octokit, githubSetting)
   } catch (error) {
     core.debug('error occurred')
     if (error instanceof Error) core.setFailed(error.message)
@@ -48,7 +48,7 @@ export async function run(
   core.debug(`finish!`)
 }
 
-function findIssueToEscalate(
+async function findIssueToEscalate(
   res: RestEndpointMethodTypes["issues"]["listForRepo"]["response"],
   octokit: InstanceType<typeof GitHub>,
   githubSetting: GithubSetting,
@@ -56,9 +56,10 @@ function findIssueToEscalate(
   core.debug(`found issues ${res.data.length}`);
 
   const current = new Date()
+  const targetIssues: any[] = []
 
   res.data.forEach((issue, index, array) => {
-    core.debug(`escalation target issue: ${issue.title} #${issue.number}`);
+    core.debug(`found issue: ${issue.title} #${issue.number}`);
 
     const labels = issue.labels.map(label => {
         if (typeof label === 'string') {
@@ -82,7 +83,13 @@ function findIssueToEscalate(
     supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes)
 
     if (supportLimitDateTime <= current) {
-      copyIssue(
+      targetIssues.push(issue)
+      issue
+    }
+  })
+
+  await Promise.all(
+    targetIssues.map(async issue => await copyIssue(
         octokit,
         githubSetting,
         issue.title,
@@ -90,8 +97,8 @@ function findIssueToEscalate(
         issue.html_url,
         issue.number,
       )
-    }
-  })
+    )
+  )
 }
 
 function checkSupportLimit(labels: (string | undefined)[]) {
@@ -127,33 +134,32 @@ ${oldIssueBody}
 ${joinedOldComments}
     `
 
-  await octokit.rest.issues.create({
+  const res = await octokit.rest.issues.create({
     owner: githubSetting.owner,
     repo: githubSetting.destRepository,
     title: oldIssueTitle,
     body: issueBody,
-  }).then((res) => {
-    let createdIssueUrl = res.data.html_url
-    core.debug(`create issue! ${createdIssueUrl}`)
+  })
+  let createdIssueUrl = res.data.html_url
+  core.debug(`create issue! ${createdIssueUrl}`)
 
-    octokit.rest.issues.createComment({
-      owner: githubSetting.owner,
-      repo: githubSetting.repository,
-      issue_number: oldIssueNumber,
-      body: `create issue! ${createdIssueUrl}`
-    })
-    octokit.rest.issues.addLabels({
-      owner: githubSetting.owner,
-      repo: githubSetting.repository,
-      issue_number: oldIssueNumber,
-      labels: [IGNORE_ISSUE_LABEL],
-    })
-    octokit.rest.issues.removeLabel({
-      owner: githubSetting.owner,
-      repo: githubSetting.repository,
-      issue_number: oldIssueNumber,
-      name: ESCALATION_ISSUE_LABEL,
-    })
+  await octokit.rest.issues.createComment({
+    owner: githubSetting.owner,
+    repo: githubSetting.repository,
+    issue_number: oldIssueNumber,
+    body: `create issue! ${createdIssueUrl}`
+  })
+  await octokit.rest.issues.addLabels({
+    owner: githubSetting.owner,
+    repo: githubSetting.repository,
+    issue_number: oldIssueNumber,
+    labels: [IGNORE_ISSUE_LABEL],
+  })
+  await octokit.rest.issues.removeLabel({
+    owner: githubSetting.owner,
+    repo: githubSetting.repository,
+    issue_number: oldIssueNumber,
+    name: ESCALATION_ISSUE_LABEL,
   })
 }
 
@@ -162,14 +168,13 @@ async function getComments(
   githubSetting: GithubSetting,
   issueNumber: number
 ): Promise<string[]> {
-  return octokit.rest.issues.listComments({
+  const res = await octokit.rest.issues.listComments({
     owner: githubSetting.owner,
     repo: githubSetting.repository,
     issue_number: issueNumber,
-  }).then((res) => {
-    return res.data.map((v) => {
-      return v.body || ''
-    })
+  })
+  return res.data.map((v) => {
+    return v.body || ''
   })
 }
 
