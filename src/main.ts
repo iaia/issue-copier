@@ -106,7 +106,7 @@ ${joinedOldComments}
 
   await octokit.rest.issues.create({
     owner: githubSetting.owner,
-    repo: githubSetting.repository,
+    repo: githubSetting.destRepository,
     title: oldIssueTitle,
     body: issueBody,
   }).then((res) => {
@@ -115,7 +115,7 @@ ${joinedOldComments}
 
     octokit.rest.issues.createComment({
       owner: githubSetting.owner,
-      repo: githubSetting.repository,
+      repo: githubSetting.destRepository,
       issue_number: oldIssueNumber,
       body: `create issue! ${createdIssueUrl}`
     })
