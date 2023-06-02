@@ -112,7 +112,7 @@ ${joinedOldComments}
     `;
         yield octokit.rest.issues.create({
             owner: githubSetting.owner,
-            repo: githubSetting.repository,
+            repo: githubSetting.destRepository,
             title: oldIssueTitle,
             body: issueBody,
         }).then((res) => {

@@ -120,10 +120,10 @@ exports.run = run;
 function checkSupportLimit(labels) {
     const emergency = labels.find((label) => label == EMERGENCY_ISSUE_LABEL);
     if (typeof emergency === "undefined") {
-        return 1;
+        return 60;
     }
     else {
-        return 1;
+        return 5;
     }
 }
 function copyIssue(octokit, githubSetting, oldIssueTitle, oldIssueBody, oldIssueUrl, oldIssueNumber) {
@@ -142,7 +142,7 @@ ${joinedOldComments}
     `;
         yield octokit.rest.issues.create({
             owner: githubSetting.owner,
-            repo: githubSetting.repository,
+            repo: githubSetting.destRepository,
             title: oldIssueTitle,
             body: issueBody,
         }).then((res) => {
