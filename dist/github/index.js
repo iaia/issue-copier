@@ -63,7 +63,7 @@ function run(runner) {
                 since: isoDate,
                 labels: ESCALATION_ISSUE_LABEL,
             });
-            findIssueToEscalate(res, octokit, githubSetting);
+            yield findIssueToEscalate(res, octokit, githubSetting);
         }
         catch (error) {
             core.debug('error occurred');
@@ -75,30 +75,37 @@ function run(runner) {
 }
 exports.run = run;
 function findIssueToEscalate(res, octokit, githubSetting) {
-    core.debug(`found issues ${res.data.length}`);
-    const current = new Date();
-    res.data.forEach((issue, index, array) => {
-        core.debug(`escalation target issue: ${issue.title} #${issue.number}`);
-        const labels = issue.labels.map(label => {
-            if (typeof label === 'string') {
-                return label;
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`found issues ${res.data.length}`);
+        const current = new Date();
+        const targetIssues = [];
+        res.data.forEach((issue, index, array) => {
+            core.debug(`found issue: ${issue.title} #${issue.number}`);
+            const labels = issue.labels.map(label => {
+                if (typeof label === 'string') {
+                    return label;
+                }
+                else {
+                    return label.name;
+                }
+            });
+            if (labels.length == 0) {
+                return;
             }
-            else {
-                return label.name;
+            if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
+                return;
+            }
+            const supportLimitMinutes = checkSupportLimit(labels);
+            const supportLimitDateTime = new Date(issue.created_at);
+            supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
+            if (supportLimitDateTime <= current) {
+                targetIssues.push(issue);
+                issue;
             }
         });
-        if (labels.length == 0) {
-            return;
-        }
-        if (labels.find((label) => label === IGNORE_ISSUE_LABEL)) {
-            return;
-        }
-        const supportLimitMinutes = checkSupportLimit(labels);
-        const supportLimitDateTime = new Date(issue.created_at);
-        supportLimitDateTime.setMinutes(supportLimitDateTime.getMinutes() + supportLimitMinutes);
-        if (supportLimitDateTime <= current) {
-            copyIssue(octokit, githubSetting, issue.title, issue.body || '', issue.html_url, issue.number);
-        }
+        yield Promise.all(targetIssues.map((issue) => __awaiter(this, void 0, void 0, function* () {
+            return yield copyIssue(octokit, githubSetting, issue.title, issue.body || '', issue.html_url, issue.number);
+        })));
     });
 }
 function checkSupportLimit(labels) {
@@ -124,45 +131,43 @@ ${oldIssueBody}
 ## comments
 ${joinedOldComments}
     `;
-        yield octokit.rest.issues.create({
+        const res = yield octokit.rest.issues.create({
             owner: githubSetting.owner,
             repo: githubSetting.destRepository,
             title: oldIssueTitle,
             body: issueBody,
-        }).then((res) => {
-            let createdIssueUrl = res.data.html_url;
-            core.debug(`create issue! ${createdIssueUrl}`);
-            octokit.rest.issues.createComment({
-                owner: githubSetting.owner,
-                repo: githubSetting.repository,
-                issue_number: oldIssueNumber,
-                body: `create issue! ${createdIssueUrl}`
-            });
-            octokit.rest.issues.addLabels({
-                owner: githubSetting.owner,
-                repo: githubSetting.repository,
-                issue_number: oldIssueNumber,
-                labels: [IGNORE_ISSUE_LABEL],
-            });
-            octokit.rest.issues.removeLabel({
-                owner: githubSetting.owner,
-                repo: githubSetting.repository,
-                issue_number: oldIssueNumber,
-                name: ESCALATION_ISSUE_LABEL,
-            });
+        });
+        let createdIssueUrl = res.data.html_url;
+        core.debug(`create issue! ${createdIssueUrl}`);
+        yield octokit.rest.issues.createComment({
+            owner: githubSetting.owner,
+            repo: githubSetting.repository,
+            issue_number: oldIssueNumber,
+            body: `create issue! ${createdIssueUrl}`
+        });
+        yield octokit.rest.issues.addLabels({
+            owner: githubSetting.owner,
+            repo: githubSetting.repository,
+            issue_number: oldIssueNumber,
+            labels: [IGNORE_ISSUE_LABEL],
+        });
+        yield octokit.rest.issues.removeLabel({
+            owner: githubSetting.owner,
+            repo: githubSetting.repository,
+            issue_number: oldIssueNumber,
+            name: ESCALATION_ISSUE_LABEL,
         });
     });
 }
 function getComments(octokit, githubSetting, issueNumber) {
     return __awaiter(this, void 0, void 0, function* () {
-        return octokit.rest.issues.listComments({
+        const res = yield octokit.rest.issues.listComments({
             owner: githubSetting.owner,
             repo: githubSetting.repository,
             issue_number: issueNumber,
-        }).then((res) => {
-            return res.data.map((v) => {
-                return v.body || '';
-            });
+        });
+        return res.data.map((v) => {
+            return v.body || '';
         });
     });
 }
